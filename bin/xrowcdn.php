@@ -162,7 +162,7 @@ if ( $options['update'] AND !$options['since'] )
     if( $update_di )
     {
     	$newtime = new DateTime();
-    	$since = xrowCDN::getLatestUpdate( "distribution" );
+    	$since = xrowCDN::getLatestUpdateDistribution();
         $cli->output( "Trying to update Distribution files since " . $since->format( DateTime::ISO8601 ) . "..." );
         xrowCDN::updateDistributionFiles( $since );
         xrowCDN::setLatestDistributionUpdate( $newtime );
@@ -170,7 +170,7 @@ if ( $options['update'] AND !$options['since'] )
     if( $update_db )
     {
     	$newtime = new DateTime();
-    	$since2 = xrowCDN::getLatestUpdate( "database" );
+    	$since2 = xrowCDN::getLatestUpdateDatabase();
         $cli->output( "Trying to update Database files since " . $since2->format( DateTime::ISO8601 ) . "..." );
         xrowCDN::updateDatabaseFiles( $since2 );
         xrowCDN::setLatestDatabaseUpdate( $newtime );
@@ -185,12 +185,12 @@ if ( !$action )
     $cdn = xrowCDN::getInstance( );
 
     $newtime = new DateTime();
-    $since = xrowCDN::getLatestUpdate( "distribution" );
+    $since = xrowCDN::getLatestUpdateDistribution();
     $cli->output( "Trying to update Distribution files..." );
     xrowCDN::updateDistributionFiles( $since );
     xrowCDN::setLatestDistributionUpdate( $newtime );
     
-    $since2 = xrowCDN::getLatestUpdate( "database" );
+    $since2 = xrowCDN::getLatestUpdateDatabase();
     $cli->output( "Trying to update Database files..." );
     xrowCDN::updateDatabaseFiles( $since2 );
     xrowCDN::setLatestDatabaseUpdate( $newtime );

@@ -29,12 +29,15 @@
 
 $cdn = xrowCDN::getInstance( );
 $newtime = new DateTime();
-$since = xrowCDN::getLatestUpdate( "distribution" );
-xrowCDN::updateDistributionFiles( $since );
-xrowCDN::setLatestDistributionUpdate( $newtime );
 
-$since2 = xrowCDN::getLatestUpdate( "database" );
-xrowCDN::updateDatabaseFiles( $since2 );
+// We don't update the distribution here
+# $since = xrowCDN::getLatestUpdateDistribution();
+# xrowCDN::updateDistributionFiles( $since );
+# xrowCDN::setLatestDistributionUpdate( $newtime );
+// We don't update the distribution here
+
+$since = xrowCDN::getLatestUpdateDatabase();
+xrowCDN::updateDatabaseFiles( $since );
 xrowCDN::setLatestDatabaseUpdate( $newtime );
 
 $cli->output( 'Cronjob xrowCDN finished...');

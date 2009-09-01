@@ -14,7 +14,7 @@
 */
 
 Developed by
-Björn Dieding   ( bjoern@xrow.de )
-Sören Meyer     ( soeren@xrow.de )
+BjÃ¶rnn Dieding   ( bjoern@xrow.de )
+SÃ¶ren Meyer     ( soeren@xrow.de )
 
-This extension delivers tools a CDN like AWS S3.
+This extension delivers a tool to handle AWS S3.

@@ -67,6 +67,24 @@ class xrowCDN
     
     }
 
+    /* Gets latest update DateTime of distribution
+     *      
+     * @throws Exception When an error occured
+     */
+    static function getLatestUpdateDistribution( )
+    {
+    	self::getLatestUpdate( "distribution" );
+    }
+    
+    /* Gets latest update DateTime of database
+     *      
+     * @throws Exception When an error occured
+     */
+    static function getLatestUpdateDatabase( )
+    {
+        self::getLatestUpdate( "database" );
+    }
+    
     /* Sets latest update DateTime
      *      
      * @param $type Defines either database or distribution
@@ -377,111 +395,33 @@ class xrowCDN
                     
                     if ( $ini->hasSection( 'Rule-' . $rule ) )
                     {
-                        if ( $ini->hasVariable( 'Rule-' . $rule, 'Dirs' ) and $ini->hasVariable( 'Rule-' . $rule, 'Suffixes' ) and $ini->hasVariable( 'Rule-' . $rule, 'Replacement' ) and $ini->hasVariable( 'Rule-' . $rule, 'Bucket' ) )
-                        {
-                            $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-                            $bucketlist[] = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-                            $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
-                            $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
-                            $dirs = '(' . implode( '|', $dirs ) . ')';
-                            $suffixes = '(' . implode( '|', $suffixes ) . ')';
-                            $PATH_EXP = '(\/[a-z0-9_-]+)*';
-                            $BASENAME_EXP = '[.a-z0-9_-]+';
-                            $rule = "/(" . $dirs . $PATH_EXP . '\/' . $BASENAME_EXP . '\.' . $suffixes . ')/imU';
-                            foreach ( $files as $fileName )
-                            {
-                                if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
-                                {
-                                    $filestoupload[] = array( 
-                                        "bucket" => $bucket , 
-                                        "file" => $fileName 
-                                    );
-                                    $countfiles ++;
-                                }
-                            }
-                        }
-                    }
-                } // foreach
-            
-
-            } // if has Rules List
-        
-
-        }
-        return array( 
-            "buckets" => $bucketlist , 
-            "files" => $filestoupload , 
-            "count" => $countfiles 
-        );
-    }
-
-    /**
-     * Gets files in the database
-     * @param DateTime $since Defines the point of time from when the files should be updated
-     * @throws Exception When an error occured
-     */
-    static function getDatabaseFiles( DateTime $since = null )
-    {
-        $cli = eZCLI::instance();
-        $ini = eZINI::instance( 'xrowcdn.ini' );
-        $directories = $ini->variable( 'Settings', 'DirectoriesDBfiles' );
-        $currrentDate = time();
-        $countfiles = 0;
-        $files = array();
-        $filestoupload = array();
-        $bucketlist = array();
-        
-        foreach ( $directories as $directory )
-        {
-            $fileSPLObjects = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $directory ), RecursiveIteratorIterator::CHILD_FIRST );
-            
-            try
-            {
-                foreach ( $fileSPLObjects as $fullFileName => $fileSPLObject )
-                {
-                    if ( ! $fileSPLObject->isDir() )
-                    {
-                        $files[] = $fullFileName;
-                    }
-                }
-            }
-            catch ( UnexpectedValueException $e )
-            {
-                printf( "Directory [%s] contained a directory we can not recurse into", $directory );
-            }
-            
-            if ( $ini->hasVariable( 'Rules', 'List' ) )
-            {
-                foreach ( $ini->variable( 'Rules', 'List' ) as $rule )
-                {
-                    $dirs = array();
-                    $suffix = array();
-                    
-                    if ( $ini->hasSection( 'Rule-' . $rule ) )
-                    {
-                        if ( $ini->hasVariable( 'Rule-' . $rule, 'Dirs' ) and $ini->hasVariable( 'Rule-' . $rule, 'Suffixes' ) and $ini->hasVariable( 'Rule-' . $rule, 'Replacement' ) and $ini->hasVariable( 'Rule-' . $rule, 'Bucket' ) )
-                        {
-                            $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-                            $bucketlist[] = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-                            $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
-                            $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
-                            $dirs = '(' . implode( '|', $dirs ) . ')';
-                            $suffixes = '(' . implode( '|', $suffixes ) . ')';
-                            $PATH_EXP = '(\/[a-z0-9_-]+)*';
-                            $BASENAME_EXP = '[.a-z0-9_-]+';
-                            $rule = "/(" . $dirs . $PATH_EXP . '\/' . $BASENAME_EXP . '\.' . $suffixes . ')/imU';
-                            foreach ( $files as $fileName )
-                            {
-                                if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
-                                {
-                                    $filestoupload[] = array( 
-                                        "bucket" => $bucket , 
-                                        "file" => $fileName 
-                                    );
-                                    $countfiles ++;
-                                }
-                            }
-                        }
+                    	// Check if rule is for distribution files
+                    	if(  $ini->hasVariable( 'Rule-' . $rule, 'Distribution' ) and $ini->variable( 'Rule-' . $rule, 'Distribution' ) == "true" )
+                    	{
+	                    	if ( $ini->hasVariable( 'Rule-' . $rule, 'Dirs' ) and $ini->hasVariable( 'Rule-' . $rule, 'Suffixes' ) and $ini->hasVariable( 'Rule-' . $rule, 'Replacement' ) and $ini->hasVariable( 'Rule-' . $rule, 'Bucket' ) )
+	                        {
+	                            $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
+	                            $bucketlist[] = $ini->variable( 'Rule-' . $rule, 'Bucket' );
+	                            $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
+	                            $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
+	                            $dirs = '(' . implode( '|', $dirs ) . ')';
+	                            $suffixes = '(' . implode( '|', $suffixes ) . ')';
+	                            $PATH_EXP = '(\/[a-z0-9_-]+)*';
+	                            $BASENAME_EXP = '[.a-z0-9_-]+';
+	                            $rule = "/(" . $dirs . $PATH_EXP . '\/' . $BASENAME_EXP . '\.' . $suffixes . ')/imU';
+	                            foreach ( $files as $fileName )
+	                            {
+	                                if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+	                                {
+	                                    $filestoupload[] = array( 
+	                                        "bucket" => $bucket , 
+	                                        "file" => $fileName 
+	                                    );
+	                                    $countfiles ++;
+	                                }
+	                            }
+	                        }
+                    	}
                     }
                 } // foreach
             
