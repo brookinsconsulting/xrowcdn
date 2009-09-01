@@ -73,7 +73,7 @@ class xrowCDN
      */
     static function getLatestUpdateDistribution( )
     {
-    	self::getLatestUpdate( "distribution" );
+    	return self::getLatestUpdate( "distribution" );
     }
     
     /* Gets latest update DateTime of database
@@ -82,7 +82,7 @@ class xrowCDN
      */
     static function getLatestUpdateDatabase( )
     {
-        self::getLatestUpdate( "database" );
+        return self::getLatestUpdate( "database" );
     }
     
     /* Sets latest update DateTime
