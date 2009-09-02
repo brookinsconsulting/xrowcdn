@@ -42,6 +42,8 @@ Enable the outputfilter after the initial bucket update (see 4. for this).
 
 xrowCDN is based on the Zend library's S3 module. So please include Zend via autoloads in the config.php
 
+You might run into memory exhausted scenarios. In this case increase the memory. Bigger installation need more ram. 
+
 ----------------
 2. CronJob
 ----------------
