@@ -8,7 +8,7 @@ class xrowCDN
      * @param $handlerName Defines the handlername default: xrowCloudFront
      * @throws Exception When an error occured
      */
-    static function getInstance( $handlerName = 'xrowCloundFront' )
+    static function &getInstance( $handlerName = 'xrowCloundFront' )
     {
         if ( ! array_key_exists( 'xrowCDNInstance', $GLOBALS ) )
         {
@@ -28,15 +28,15 @@ class xrowCDN
             $impl = eZExtension::getHandlerClass( $options );
             if ( ! $impl )
             {
-                throw new Exception( "CDN Handler not loaded" );
+                throw new Exception( "CDN Handler \"$handlerName\" not loaded" );
             }
             $GLOBALS['xrowCDNInstance'] = &$impl;
         }
         else
         {
             $impl = & $GLOBALS['xrowCDNInstance'];
-            return $impl;
         }
+        return $impl;
     }
 
     
