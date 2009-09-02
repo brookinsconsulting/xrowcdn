@@ -18,14 +18,21 @@ class xrowCloundFront implements xrowCDNInterface
             "secret" => $secretkey 
         );
         $this->ini = $ini;
-        /* ZEnd Autoload could have been in the config.php, but we do not want that overhead */
-        require_once ( 'Zend/Loader.php' );
-        spl_autoload_register( array( 
-            'Zend_Loader' , 
-            'autoload' 
-        ) );
-        
-        $this->s3 = new Zend_Service_Amazon_S3( $awskey, $secretkey );
+        /* try force loading of zend framework */
+        if ( class_exists( 'Zend_Service_Amazon_S3' ) )
+        {
+            $this->s3 = new Zend_Service_Amazon_S3( $awskey, $secretkey );
+        }
+        else
+        {
+            require_once ( 'Zend/Loader.php' );
+            spl_autoload_register( array( 
+                'Zend_Loader' , 
+                'autoload' 
+            ) );
+            $this->s3 = new Zend_Service_Amazon_S3( $awskey, $secretkey );
+        }
+    
     }
 
     /**
