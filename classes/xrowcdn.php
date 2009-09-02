@@ -317,6 +317,7 @@ class xrowCDN
                         }
                     }
                 }
+                eZContentObject::clearCache();
             }
         }
         $allfiles = array( 
