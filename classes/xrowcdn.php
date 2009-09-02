@@ -342,8 +342,8 @@ class xrowCDN
             $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
             $countfiles_up ++;
             $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
-            $cdn->put( $file, $file->filePath, $uploadfile["bucket"] );
-        
+            $file->fetch( true );
+            $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
         }
         
         $cli->output( "$countfiles files checked total. \r\n" );
@@ -406,9 +406,7 @@ class xrowCDN
 	                            $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
 	                            $dirs = '(' . implode( '|', $dirs ) . ')';
 	                            $suffixes = '(' . implode( '|', $suffixes ) . ')';
-	                            $PATH_EXP = '(\/[a-z0-9_-]+)*';
-	                            $BASENAME_EXP = '[.a-z0-9_-]+';
-	                            $rule = "/(" . $dirs . $PATH_EXP . '\/' . $BASENAME_EXP . '\.' . $suffixes . ')/imU';
+	                            $rule = "/(" . $dirs . xrowCDNfilter::PATH_EXP . '\/' . xrowCDNfilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
 	                            foreach ( $files as $fileName )
 	                            {
 	                                if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )

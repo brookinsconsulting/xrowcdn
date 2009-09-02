@@ -67,8 +67,7 @@ class xrowCloundFront implements xrowCDNInterface
      */
     function put( $file, $remotepath, $bucket )
     {
-        $file->fetch( true );
-        $this->s3->putFile( $file->filePath, $bucket . "/" . $remotepath, array( 
+        $this->s3->putFile( $file, $bucket . "/" . $remotepath, array( 
             Zend_Service_Amazon_S3::S3_ACL_HEADER => Zend_Service_Amazon_S3::S3_ACL_PUBLIC_READ 
         ) );
     }
