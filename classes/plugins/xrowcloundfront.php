@@ -5,6 +5,7 @@ class xrowCloundFront implements xrowCDNInterface
     private $vars = array();
     private $ini;
     private $s3;
+
     /**
      * Constructor
      */
@@ -17,11 +18,17 @@ class xrowCloundFront implements xrowCDNInterface
             "secret" => $secretkey 
         );
         $this->ini = $ini;
-        require_once 'Zend/Service/Amazon/S3.php';
+        /* ZEnd Autoload could have been in the config.php, but we do not want that overhead */
+        require_once ( 'Zend/Loader.php' );
+        spl_autoload_register( array( 
+            'Zend_Loader' , 
+            'autoload' 
+        ) );
+        
         $this->s3 = new Zend_Service_Amazon_S3( $awskey, $secretkey );
     }
 
-     /**
+    /**
      * Gets all files stored in the namespace / bucket in an array.
      *
      * @param $namespace Defines the name of the namespace / bucket.
@@ -32,7 +39,7 @@ class xrowCloundFront implements xrowCDNInterface
         return $this->s3->getObjectsByBucket( $namespace );
     }
 
-     /**
+    /**
      * Clears all files out of the namespace / bucket
      *
      * @param $namespace Defines the name of the namespace / bucket.
@@ -43,7 +50,7 @@ class xrowCloundFront implements xrowCDNInterface
         $this->s3->cleanBucket( $bucketName );
     }
 
-     /**
+    /**
      * Uploads a file into the bucket
      *
      * @param $bucket Defines the name of the namespace / bucket.
