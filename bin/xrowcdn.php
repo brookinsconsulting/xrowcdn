@@ -58,7 +58,7 @@ if ( $options['show-time'] )
     $cli->output( "Last distribution update was " . $time->format( DateTime::ISO8601 ) );
     $time = xrowCDN::getLatestUpdateDatabase();
     $cli->output( "Last database update was " . $time->format( DateTime::ISO8601 ) );
-    $script->shutdown();
+    $script->shutdown( 0 );
 }
 if ( $options['clear'] )
 {
@@ -71,6 +71,7 @@ if ( $options['clear'] )
     xrowCDN::setLatestDistributionUpdate();( $newtime );
     xrowCDN::setLatestDatabaseUpdate();( $newtime );
 	$cli->output( "Cleaning the namespace '" . $options['clear'] . "' finished..." );
+	$script->shutdown( 0 );
 }
 
 if ( $options['clear-all'] )
@@ -78,9 +79,10 @@ if ( $options['clear-all'] )
 	$action = true;
     $cli->output( "Clearing all files from all buckets..." );
     xrowCDN::cleanAll( );
+    $script->shutdown( 0 );
 }
 
-if ( $options['since'] AND $options['update'] )
+if ( $options['update'] )
 {
     $action = true;
     $update_db = false;
@@ -88,7 +90,7 @@ if ( $options['since'] AND $options['update'] )
     
     if( in_array( $options['update'], array( 'database', 'distribution', 'all' )) )
     {
-        $since = new DateTime( $options['since'] );
+
         $newtime = new DateTime();
         if( $options['update'] == "distribution" )
         {
@@ -111,7 +113,19 @@ if ( $options['since'] AND $options['update'] )
         $cli->output( "Unknown update procedure, choose from these: distribution, database or all." );
         $script->shutdown( 1 );
     }
-    
+    if( $options['since'] )
+    {
+    	            $since = xrowCDN::getLatestUpdateDistribution();
+
+        $since2 = xrowCDN::getLatestUpdateDatabase();
+    }
+    else 
+    {
+    	            $since = new DateTime( $options['since'] );
+            $since2 = new DateTime( $options['since'] );
+    }
+
+
     $cli->output( "Updating '". $options['update'] . "' since " . $options['since'] . "." );
     
     if( $update_di )
@@ -126,78 +140,10 @@ if ( $options['since'] AND $options['update'] )
 	    xrowCDN::updateDatabaseFiles( $since2 );
 	    xrowCDN::setLatestDatabaseUpdate( $newtime );
     }
-} // Update AND Since
-
-if ( $options['update'] AND !$options['since'] )
-{
-    $action = true;
-    $update_db = false;
-    $update_di = false;
-    
-    if( in_array( $options['update'], array( 'database', 'distribution', 'all' )) )
-    {
-        if( $options['update'] == "distribution" )
-        {
-            $update_db = false;
-            $update_di = true;
-        }
-        if( $options['update'] == "database" )
-        {
-            $update_db = true;
-            $update_di = false;
-        }
-        if( $options['update'] == "all" )
-        {
-            $update_db = true;
-            $update_di = true;
-        }
-    }
-    else
-    {
-        $cli->output( "Unknown update procedure, choose from these: distribution, database or all." );
-        $script->shutdown( 1 );
-    }
-    
-    $cli->output( "Updating '". $options['update'] . "' ..." );
-    
-    if( $update_di )
-    {
-    	$newtime = new DateTime();
-    	$since = xrowCDN::getLatestUpdateDistribution();
-        $cli->output( "Trying to update Distribution files since " . $since->format( DateTime::ISO8601 ) . "..." );
-        xrowCDN::updateDistributionFiles( $since );
-        xrowCDN::setLatestDistributionUpdate( $newtime );
-    }
-    if( $update_db )
-    {
-    	$newtime = new DateTime();
-    	$since2 = xrowCDN::getLatestUpdateDatabase();
-        $cli->output( "Trying to update Database files since " . $since2->format( DateTime::ISO8601 ) . "..." );
-        xrowCDN::updateDatabaseFiles( $since2 );
-        xrowCDN::setLatestDatabaseUpdate( $newtime );
-    }
-} // Update AND Since
-
-
-if ( !$action )
-{
-    $cli->output( "Default: Update of distribution and database files." );
-    
-    $cdn = xrowCDN::getInstance( );
-
-    $newtime = new DateTime();
-    $since = xrowCDN::getLatestUpdateDistribution();
-    $cli->output( "Trying to update Distribution files..." );
-    xrowCDN::updateDistributionFiles( $since );
-    xrowCDN::setLatestDistributionUpdate( $newtime );
-    
-    $since2 = xrowCDN::getLatestUpdateDatabase();
-    $cli->output( "Trying to update Database files..." );
-    xrowCDN::updateDatabaseFiles( $since2 );
-    xrowCDN::setLatestDatabaseUpdate( $newtime );
-    
+    $script->shutdown( 0 );
 }
 
-$script->shutdown();
+$script->showHelp();
+$script->shutdown(1);
 
 ?>
