@@ -40,8 +40,9 @@ $script->startup();
 
 $options = $script->getOptions( "[update:][clear:][clear-all][since:]",
                                 "",
-                                array( 'update'    => 'Updates either distributionfiles, databasefiles or all',
+                                array( 'update'    => 'Updates either distribution, database or all',
                                        'clear'     => 'Clears the bucket if provided',
+                                       'show-time' => 'Shows the time of the last updates',
                                        'clear-all' => 'Clears all available buckets',
                                        'since'     => 'Allows to update since a special time, format: YYYY-MM-DDTHH:MM:SS', ) );
 $sys = eZSys::instance();
@@ -51,32 +52,32 @@ $script->initialize();
 $cli->output( "Running xrowCDN Shell Script..." );
 
 $action = false;
-
+if ( $options['show-time'] )
+{
+    $time = xrowCDN::getLatestDistributionUpdate();
+    $cli->output( "Last distribution update was " . $time->format( DateTime::ISO8601 ) );
+    $time = xrowCDN::getLatestDatabaseUpdate();
+    $cli->output( "Last database update was " . $time->format( DateTime::ISO8601 ) );
+    $script->shutdown();
+}
 if ( $options['clear'] )
 {
 	$action = true;
-	$cli->output( "Trying to clear the bucket '" . $options['clear'] . "'..." );
+	$cli->output( "Trying to clear the namespace'" . $options['clear'] . "'..." );
 	
 	$cdn = xrowCDN::getInstance( );
     xrowCDN::clean( $options['clear'] );
     $newtime = new DateTime( '1970-01-01T00:00:00' );
     xrowCDN::setLatestDistributionUpdate( $newtime );
     xrowCDN::setLatestDatabaseUpdate( $newtime );
-	
-	$cli->output( "Cleaning the bucket '" . $options['clear'] . "' finished..." );
+	$cli->output( "Cleaning the namespace '" . $options['clear'] . "' finished..." );
 }
 
 if ( $options['clear-all'] )
 {
 	$action = true;
     $cli->output( "Clearing all files from all buckets..." );
-    
-    $cdn = xrowCDN::getInstance( );
-    #xrowCDN::clean( $options['clear'] );
-    $xrowcdnini = eZINI::instance( 'xrowcdn.ini' );
-    // Getting all named buckets from all provided active Rules.
-    // Deleting uinque bucket / namespace
-    
+    xrowCDN::cleanAll( );
 }
 
 if ( $options['since'] AND $options['update'] )

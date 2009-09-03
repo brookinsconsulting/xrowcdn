@@ -54,7 +54,10 @@ class xrowCloundFront implements xrowCDNInterface
      */
     function clean( $bucketName )
     {
-        $this->s3->cleanBucket( $bucketName );
+    	if( $bucketName )
+    	{
+            $this->s3->cleanBucket( $bucketName );
+    	}
     }
 
     /**

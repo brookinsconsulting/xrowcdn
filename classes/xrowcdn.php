@@ -3,7 +3,7 @@
 class xrowCDN
 {
 
-	/* Gets the CDN handler 
+    /* Gets the CDN handler 
      *      
      * @param $handlerName Defines the handlername default: xrowCloudFront
      * @throws Exception When an error occured
@@ -39,7 +39,6 @@ class xrowCDN
         return $impl;
     }
 
-    
     /* Gets latest update DateTime of distribution or database files
      *      
      * @param $type Defines either database or distribution
@@ -71,20 +70,20 @@ class xrowCDN
      *      
      * @throws Exception When an error occured
      */
-    static function getLatestUpdateDistribution( )
+    static function getLatestUpdateDistribution()
     {
-    	return self::getLatestUpdate( "distribution" );
+        return self::getLatestUpdate( "distribution" );
     }
-    
+
     /* Gets latest update DateTime of database
      *      
      * @throws Exception When an error occured
      */
-    static function getLatestUpdateDatabase( )
+    static function getLatestUpdateDatabase()
     {
         return self::getLatestUpdate( "database" );
     }
-    
+
     /* Sets latest update DateTime
      *      
      * @param $type Defines either database or distribution
@@ -114,17 +113,42 @@ class xrowCDN
         return $result;
     }
 
-    
-    /* Clears the bucket / namespace
+    /* Clears all namespaces
      *      
-     * @param $namespace Defines the bucket / namespace
+     * @throws Exception When an error occured
+     */
+    static function cleanAll( $namespace )
+    {
+        $cdn = xrowCDN::getInstance();
+        $newtime = new DateTime( '1970-01-01T00:00:00' );
+        xrowCDN::setLatestDistributionUpdate( $newtime );
+        xrowCDN::setLatestDatabaseUpdate( $newtime );
+        if ( $ini->hasVariable( 'Rules', 'List' ) )
+        {
+            foreach ( $ini->variable( 'Rules', 'List' ) as $rule )
+            {
+                $dirs = array();
+                $suffix = array();
+                
+                if ( $ini->hasSection( 'Rule-' . $rule ) )
+                {
+                    $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
+                    $cdn->clean( $bucket );
+                }
+            } // foreach
+        } // if has Rules List
+    
+
+    }
+
+    /* Clears the namespace
+     *      
+     * @param $namespace Defines the namespace
      * @throws Exception When an error occured
      */
     static function clean( $namespace )
     {
         $cdn = xrowCDN::getInstance();
-        $cli = eZCLI::instance();
-        $cli->output( 'xrowCDN clean' );
         $cdn->clean( $namespace );
     }
 
@@ -137,7 +161,7 @@ class xrowCDN
     {
         self::setLatestUpdate( "distribution", $since );
     }
-    
+
     /* Wrapper to set latest Database files update DateTime
      *      
      * @param DateTime $since Defines the latest DateTime of update
@@ -147,7 +171,7 @@ class xrowCDN
     {
         self::setLatestUpdate( "database", $since );
     }
-    
+
     /* Updates Binary and Distribution
 	 *      
 	 * @param DateTime $since Defines the point of time from when the files should be updated
@@ -193,16 +217,15 @@ class xrowCDN
         // We can get all files from the bucket here and check if the files to upload exists on the remote location or not.
         // $ignoreExistance can manage that
         
+
         #foreach ( $allfiles["buckets"] as $bucketitem )
         #{
         #    $bucketfiles[$bucketitem] = $cdn->getAllDistributedFiles( $bucketitem );
         #}
         
-        $doupload = true;
+
         foreach ( $allfiles["files"] as $uploadfile )
         {
-            $upload = true;
-            
             if ( $ignoreExistance or in_array( str_replace( "\\", "/", $uploadfile["file"] ), $bucketfiles[$uploadfile["bucket"]] ) )
             {
                 #$info = $this->s3->getInfo( $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) );
@@ -212,29 +235,19 @@ class xrowCDN
                 $filetime = new DateTime( "@{$filetime}" );
                 if ( $filetime > $modified )
                 {
-                    $upload = true;
                     $countfiles_out ++;
-                    #echo "[Outdated] (L/R: " . date("d.m.Y H:i:s" ,$filetime) . " " . date("d.m.Y H:i:s", $modified ) . " )" . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) ." \r\n";  
-                #$cli->output("[OUT] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) );
                 }
                 else
                 {
-                    $upload = false;
                     $countfiles_ok ++;
-                    #echo "[OK] (L/R: " . date("d.m.Y H:i:s" ,$filetime) . " " . date("d.m.Y H:i:s", $modified ) . " )" . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) ." \r\n";    
-                #$cli->output("[OK] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) );
+                    continue;
                 }
+            }
             
-            }
-            else
-            {
-                $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
-                $countfiles_up ++;
-            }
-            if ( $doupload and $upload )
-            {
-                $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
-            }
+            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+            $countfiles_up ++;
+            $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
+        
         }
         $cli->output( "--- Result ---" );
         $cli->output( "$countfiles files checked total." );
@@ -396,31 +409,31 @@ class xrowCDN
                     
                     if ( $ini->hasSection( 'Rule-' . $rule ) )
                     {
-                    	// Check if rule is for distribution files
-                    	if(  $ini->hasVariable( 'Rule-' . $rule, 'Distribution' ) and $ini->variable( 'Rule-' . $rule, 'Distribution' ) == "true" )
-                    	{
-	                    	if ( $ini->hasVariable( 'Rule-' . $rule, 'Dirs' ) and $ini->hasVariable( 'Rule-' . $rule, 'Suffixes' ) and $ini->hasVariable( 'Rule-' . $rule, 'Replacement' ) and $ini->hasVariable( 'Rule-' . $rule, 'Bucket' ) )
-	                        {
-	                            $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-	                            $bucketlist[] = $ini->variable( 'Rule-' . $rule, 'Bucket' );
-	                            $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
-	                            $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
-	                            $dirs = '(' . implode( '|', $dirs ) . ')';
-	                            $suffixes = '(' . implode( '|', $suffixes ) . ')';
-	                            $rule = "/(" . $dirs . xrowCDNfilter::PATH_EXP . '\/' . xrowCDNfilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
-	                            foreach ( $files as $fileName )
-	                            {
-	                                if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
-	                                {
-	                                    $filestoupload[] = array( 
-	                                        "bucket" => $bucket , 
-	                                        "file" => $fileName 
-	                                    );
-	                                    $countfiles ++;
-	                                }
-	                            }
-	                        }
-                    	}
+                        // Check if rule is for distribution files
+                        if ( $ini->hasVariable( 'Rule-' . $rule, 'Distribution' ) and $ini->variable( 'Rule-' . $rule, 'Distribution' ) == "true" )
+                        {
+                            if ( $ini->hasVariable( 'Rule-' . $rule, 'Dirs' ) and $ini->hasVariable( 'Rule-' . $rule, 'Suffixes' ) and $ini->hasVariable( 'Rule-' . $rule, 'Replacement' ) and $ini->hasVariable( 'Rule-' . $rule, 'Bucket' ) )
+                            {
+                                $bucket = $ini->variable( 'Rule-' . $rule, 'Bucket' );
+                                $bucketlist[] = $ini->variable( 'Rule-' . $rule, 'Bucket' );
+                                $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
+                                $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
+                                $dirs = '(' . implode( '|', $dirs ) . ')';
+                                $suffixes = '(' . implode( '|', $suffixes ) . ')';
+                                $rule = "/(" . $dirs . xrowCDNfilter::PATH_EXP . '\/' . xrowCDNfilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
+                                foreach ( $files as $fileName )
+                                {
+                                    if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+                                    {
+                                        $filestoupload[] = array( 
+                                            "bucket" => $bucket , 
+                                            "file" => $fileName 
+                                        );
+                                        $countfiles ++;
+                                    }
+                                }
+                            }
+                        }
                     }
                 } // foreach
             
