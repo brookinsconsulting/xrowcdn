@@ -119,6 +119,7 @@ class xrowCDN
      */
     static function cleanAll( $namespace )
     {
+    	$ini = eZINI::instance( 'xrowcdn.ini' );
         $cdn = xrowCDN::getInstance();
         $newtime = new DateTime( '1970-01-01T00:00:00' );
         xrowCDN::setLatestDistributionUpdate( $newtime );
