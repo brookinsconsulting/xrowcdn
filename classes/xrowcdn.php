@@ -39,40 +39,22 @@ class xrowCDN
         return $impl;
     }
 
-    /* Gets latest update DateTime of distribution or database files
-     *      
-     * @param $type Defines either database or distribution
-     * @throws Exception When an error occured
-     */
-    static function getLatestUpdate( $type )
-    {
-        if ( $type == strtolower( "distribution" ) or $type == strtolower( "database" ) )
-        {
-            $name = "xrowcdn_" . $type . "_time";
-            $name = strtolower( $name );
-            $db = eZDB::instance();
-            $result = $db->ArrayQuery( "SELECT value FROM ezsite_data e where e.name='$name' " );
-        }
-        if ( is_array( $result ) and array_key_exists( "value", $result[0] ) )
-        {
-            $returnDate = new DateTime( $result[0]["value"] );
-            return $returnDate;
-        }
-        else
-        {
-            $newDate = new DateTime( '1970-01-01 00:00:00' );
-            return $newDate;
-        }
-    
-    }
-
     /* Gets latest update DateTime of distribution
      *      
      * @throws Exception When an error occured
      */
     static function getLatestUpdateDistribution()
     {
-        return self::getLatestUpdate( "distribution" );
+        $name = "xrowcdn_distribution_time";
+        $value = eZSiteData::get( $name );
+        if ( $value !== false )
+        {
+            return new DateTime( $value );
+        }
+        else
+        {
+            return new DateTime( '1970-01-01 00:00:00' );
+        }
     }
 
     /* Gets latest update DateTime of database
@@ -81,36 +63,16 @@ class xrowCDN
      */
     static function getLatestUpdateDatabase()
     {
-        return self::getLatestUpdate( "database" );
-    }
-
-    /* Sets latest update DateTime
-     *      
-     * @param $type Defines either database or distribution
-     * @param DateTime $since Defines the latest DateTime of update
-     * @throws Exception When an error occured
-     */
-    static function setLatestUpdate( $type, DateTime $datetime )
-    {
-        
-        if ( $type == strtolower( "distribution" ) or $type == strtolower( "database" ) )
+        $name = "xrowcdn_database_time";
+        $value = eZSiteData::get( $name );
+        if ( $value !== false )
         {
-            $name = "xrowcdn_" . $type . "_time";
-            $name = strtolower( $name );
-            $get_date = xrowCDN::getLatestUpdate( $type );
-            $newDate = new DateTime( '1970-01-01 00:00:00' );
-            if ( $get_date->format( DateTime::ISO8601 ) != $newDate->format( DateTime::ISO8601 ) )
-            {
-                $db = eZDB::instance();
-                $result = $db->query( "UPDATE ezsite_data SET value = '" . $datetime->format( DateTime::ISO8601 ) . "' WHERE name = '$name'" );
-            }
-            else
-            {
-                $db = eZDB::instance();
-                $result = $db->query( "INSERT INTO ezsite_data VALUES( '$name', '" . $datetime->format( DateTime::ISO8601 ) . "')" );
-            }
+            return new DateTime( $value );
         }
-        return $result;
+        else
+        {
+            return new DateTime( '1970-01-01 00:00:00' );
+        }
     }
 
     /* Clears all namespaces
@@ -160,7 +122,8 @@ class xrowCDN
      */
     static function setLatestDistributionUpdate( DateTime $since = null )
     {
-        self::setLatestUpdate( "distribution", $since );
+    	$name = "xrowcdn_distribution_time";
+    	return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
     }
 
     /* Wrapper to set latest Database files update DateTime
@@ -170,7 +133,8 @@ class xrowCDN
      */
     static function setLatestDatabaseUpdate( DateTime $since = null )
     {
-        self::setLatestUpdate( "database", $since );
+    	$name = "xrowcdn_database_time";
+        return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
     }
 
     /* Updates Binary and Distribution
@@ -230,11 +194,9 @@ class xrowCDN
             if ( $ignoreExistance or in_array( str_replace( "\\", "/", $uploadfile["file"] ), $bucketfiles[$uploadfile["bucket"]] ) )
             {
                 #$info = $this->s3->getInfo( $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) );
-                #$modified = $info["mtime"];
-                $modified = $since;
                 $filetime = filemtime( $uploadfile["file"] );
                 $filetime = new DateTime( "@{$filetime}" );
-                if ( $filetime > $modified )
+                if ( $filetime > $since )
                 {
                     $countfiles_out ++;
                 }
@@ -245,7 +207,7 @@ class xrowCDN
                 }
             }
             
-            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' modified ' . $filetime->format( DateTime::ISO8601 ) );
             $countfiles_up ++;
             $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
         
