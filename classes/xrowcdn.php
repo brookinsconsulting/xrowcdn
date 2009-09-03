@@ -79,7 +79,7 @@ class xrowCDN
      *      
      * @throws Exception When an error occured
      */
-    static function cleanAll( $namespace )
+    static function cleanAll()
     {
         $ini = eZINI::instance( 'xrowcdn.ini' );
         $cdn = xrowCDN::getInstance();
@@ -123,7 +123,7 @@ class xrowCDN
     static function setLatestDistributionUpdate( DateTime $since = null )
     {
         $name = "xrowcdn_distribution_time";
-        return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
+        return eZSiteData::set( $name, $since->format( DateTime::ISO8601 ) );
     }
 
     /* Wrapper to set latest Database files update DateTime
@@ -134,7 +134,7 @@ class xrowCDN
     static function setLatestDatabaseUpdate( DateTime $since = null )
     {
         $name = "xrowcdn_database_time";
-        return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
+        return eZSiteData::set( $name, $since->format( DateTime::ISO8601 ) );
     }
 
     /* Updates Binary and Distribution
