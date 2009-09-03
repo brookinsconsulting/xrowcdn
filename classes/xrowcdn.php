@@ -206,12 +206,12 @@ class xrowCDN
                     continue;
                 }
             }
-            
-            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' / ' . $filetime->format( DateTime::ISO8601 ) );
-            $countfiles_up ++;
+
             try
             {
                 $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
+                $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' / ' . $filetime->format( DateTime::ISO8601 ) );
+                $countfiles_up ++;
             }
             catch ( Exception $e )
             {
@@ -249,7 +249,6 @@ class xrowCDN
         $files = array();
         
         // Gettings images from DB and creating all aliases
-        
 
         $db = eZDB::instance();
         $result = $db->ArrayQuery( "
@@ -269,8 +268,7 @@ class xrowCDN
             
             $imageINI = eZINI::instance( 'image.ini' );
             $aliases = $imageINI->variable( "AliasSettings", "AliasList" );
-            // Limitation for debugging
-            # $result = array( $result[0] );
+
             foreach ( $result as $object_item )
             {
                 $obj = eZContentObject::fetch( $object_item["co_id"] );
@@ -312,24 +310,16 @@ class xrowCDN
         );
         
         $countfiles = $allfiles["count"];
-        
-        // Uploading files
-        #foreach ( array_unique( $allfiles["buckets"] ) as $bucketitem )
-        #{
-        #    $bucketfiles[$bucketitem] = $cdn->getAllDistributedFiles( $bucketitem );
-        #}
-        
 
         foreach ( $allfiles["files"] as $uploadfile )
         {
-            
-            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
-            $countfiles_up ++;
             $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
             $file->fetch( true );
             try
             {
                 $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
+                $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+                $countfiles_up ++;
             }
             catch ( Exception $e )
             {

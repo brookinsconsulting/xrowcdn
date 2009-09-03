@@ -3,7 +3,7 @@
  * Instead of an output filter it would be smart to have a nice template operator later on that directly converts the urls
  * 
  */
-class xrowCDNfilter
+class xrowCDNFilter
 {
 	const DIR_NAME     = '[a-z0-9_-]+';
 	const PATH_EXP     = '(\/[a-z0-9_-]+)*';
