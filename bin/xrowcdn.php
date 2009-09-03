@@ -38,7 +38,7 @@ $script = eZScript::instance( array( 'description' => ( "xrow CDN Shell script\n
 
 $script->startup();
 
-$options = $script->getOptions( "[update:][clear:][clear-all][since:]",
+$options = $script->getOptions( "[update:][clear:][clear-all][show-time][since:]",
                                 "",
                                 array( 'update'    => 'Updates either distribution, database or all',
                                        'clear'     => 'Clears the bucket if provided',
