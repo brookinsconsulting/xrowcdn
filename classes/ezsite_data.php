@@ -30,11 +30,11 @@ class eZSiteData extends eZPersistentObject
                 'name' => array( 
                     'name' => 'Name' , 
                     'datatype' => 'string' , 
-                    'default' => 0 , 
+                    'default' => '' , 
                     'required' => true 
                 ) , 
                 'value' => array( 
-                    'value' => 'Value' , 
+                    'name' => 'Value' , 
                     'datatype' => 'string' , 
                     'default' => '' , 
                     'required' => true 
