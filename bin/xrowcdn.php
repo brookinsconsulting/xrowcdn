@@ -54,9 +54,9 @@ $cli->output( "Running xrowCDN Shell Script..." );
 $action = false;
 if ( $options['show-time'] )
 {
-    $time = xrowCDN::getLatestDistributionUpdate();
+    $time = xrowCDN::getLatestUpdateDistribution();
     $cli->output( "Last distribution update was " . $time->format( DateTime::ISO8601 ) );
-    $time = xrowCDN::getLatestDatabaseUpdate();
+    $time = xrowCDN::getLatestUpdateDatabase();
     $cli->output( "Last database update was " . $time->format( DateTime::ISO8601 ) );
     $script->shutdown();
 }
@@ -68,8 +68,8 @@ if ( $options['clear'] )
 	$cdn = xrowCDN::getInstance( );
     xrowCDN::clean( $options['clear'] );
     $newtime = new DateTime( '1970-01-01T00:00:00' );
-    xrowCDN::setLatestDistributionUpdate( $newtime );
-    xrowCDN::setLatestDatabaseUpdate( $newtime );
+    xrowCDN::setLatestDistributionUpdate();( $newtime );
+    xrowCDN::setLatestDatabaseUpdate();( $newtime );
 	$cli->output( "Cleaning the namespace '" . $options['clear'] . "' finished..." );
 }
 
