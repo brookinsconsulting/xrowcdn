@@ -81,7 +81,7 @@ class xrowCDN
      */
     static function cleanAll( $namespace )
     {
-    	$ini = eZINI::instance( 'xrowcdn.ini' );
+        $ini = eZINI::instance( 'xrowcdn.ini' );
         $cdn = xrowCDN::getInstance();
         $newtime = new DateTime( '1970-01-01T00:00:00' );
         xrowCDN::setLatestDistributionUpdate( $newtime );
@@ -122,8 +122,8 @@ class xrowCDN
      */
     static function setLatestDistributionUpdate( DateTime $since = null )
     {
-    	$name = "xrowcdn_distribution_time";
-    	return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
+        $name = "xrowcdn_distribution_time";
+        return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
     }
 
     /* Wrapper to set latest Database files update DateTime
@@ -133,7 +133,7 @@ class xrowCDN
      */
     static function setLatestDatabaseUpdate( DateTime $since = null )
     {
-    	$name = "xrowcdn_database_time";
+        $name = "xrowcdn_database_time";
         return eZSiteData::set( $name, $datetime->format( DateTime::ISO8601 ) );
     }
 
@@ -207,9 +207,16 @@ class xrowCDN
                 }
             }
             
-            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' modified ' . $filetime->format( DateTime::ISO8601 ) );
+            $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' / ' . $filetime->format( DateTime::ISO8601 ) );
             $countfiles_up ++;
-            $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
+            try
+            {
+                $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
+            }
+            catch ( Exception $e )
+            {
+                $cli->output( "[FAILED] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+            }
         
         }
         $cli->output( "--- Result ---" );
@@ -320,7 +327,14 @@ class xrowCDN
             $countfiles_up ++;
             $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
             $file->fetch( true );
-            $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
+            try
+            {
+                $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
+            }
+            catch ( Exception $e )
+            {
+                $cli->output( "[FAILED] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+            }
         }
         
         $cli->output( "$countfiles files checked total. \r\n" );
