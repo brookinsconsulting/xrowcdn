@@ -121,27 +121,27 @@ if ( $options['update'] )
     }
     if ( $options['since'] )
     {
-        $since = xrowCDN::getLatestUpdateDistribution();
-        
-        $since2 = xrowCDN::getLatestUpdateDatabase();
+    	$cli->output( "Updating '" . $options['update'] . "' since " . $options['since'] . "." );
+    	$since = new DateTime( $options['since'] );
+        $since2 = new DateTime( $options['since'] );
+
     }
     else
     {
-        $since = new DateTime( $options['since'] );
-        $since2 = new DateTime( $options['since'] );
+    	
+        $since = xrowCDN::getLatestUpdateDistribution();
+        $since2 = xrowCDN::getLatestUpdateDatabase();
     }
-    
-    $cli->output( "Updating '" . $options['update'] . "' since " . $options['since'] . "." );
-    
+
     if ( $update_di )
     {
-        $cli->output( "Trying to update Distribution files..." );
+        $cli->output( "Trying to update Distribution files since " . $since->format( DateTime::ISO8601 ) );
         xrowCDN::updateDistributionFiles( $since );
         xrowCDN::setLatestDistributionUpdate( $newtime );
     }
     if ( $update_db )
     {
-        $cli->output( "Trying to update Database files..." );
+        $cli->output( "Trying to update Database files since " . $since2->format( DateTime::ISO8601 ) );
         xrowCDN::updateDatabaseFiles( $since2 );
         xrowCDN::setLatestDatabaseUpdate( $newtime );
     }
