@@ -206,7 +206,7 @@ class xrowCDN
                     continue;
                 }
             }
-
+            
             try
             {
                 $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
@@ -249,6 +249,7 @@ class xrowCDN
         $files = array();
         
         // Gettings images from DB and creating all aliases
+        
 
         $db = eZDB::instance();
         $result = $db->ArrayQuery( "
@@ -260,7 +261,7 @@ class xrowCDN
                                           eco.status = 1 AND
                                           ecoa.data_text != '' AND
                                           eco.modified >= " . $db_timestamp . "
-                                    ORDER BY eco.modified
+                                    ORDER BY eco.modified ASC
         " );
         if ( is_array( $result ) )
         {
@@ -268,7 +269,7 @@ class xrowCDN
             
             $imageINI = eZINI::instance( 'image.ini' );
             $aliases = $imageINI->variable( "AliasSettings", "AliasList" );
-
+            
             foreach ( $result as $object_item )
             {
                 $obj = eZContentObject::fetch( $object_item["co_id"] );
@@ -298,32 +299,25 @@ class xrowCDN
                         }
                     }
                 }
+                $countfiles += count( $allfiles );
+                foreach ( $allfiles["files"] as $uploadfile )
+                {
+                    $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
+                    $file->fetch( true );
+                    try
+                    {
+                        $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
+                        $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+                        $countfiles_up ++;
+                    }
+                    catch ( Exception $e )
+                    {
+                        $cli->output( "[FAILED] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
+                    }
+                }
+                $allfiles = array();
+                self::setLatestDistributionUpdate( new DateTime( "@{" . $obj->attribute( 'modified' ) . "}" ) );
                 eZContentObject::clearCache();
-            }
-        }
-        $allfiles = array( 
-            "buckets" => array( 
-                $bucket 
-            ) , 
-            "files" => $allfiles , 
-            "count" => count( $allfiles ) 
-        );
-        
-        $countfiles = $allfiles["count"];
-
-        foreach ( $allfiles["files"] as $uploadfile )
-        {
-            $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
-            $file->fetch( true );
-            try
-            {
-                $cdn->put( $file->filePath, $file->filePath, $uploadfile["bucket"] );
-                $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
-                $countfiles_up ++;
-            }
-            catch ( Exception $e )
-            {
-                $cli->output( "[FAILED] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
             }
         }
         
