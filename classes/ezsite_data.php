@@ -92,7 +92,7 @@ class eZSiteData extends eZPersistentObject
                 'name' => $name , 
                 'value' => $value 
             );
-            $data = eZSiteData( $row );
+            $data = new eZSiteData( $row );
             return $data->store();
         }
         elseif ( $data instanceof eZPersistentObject and $value !== $data->attribute( 'value' ) )
