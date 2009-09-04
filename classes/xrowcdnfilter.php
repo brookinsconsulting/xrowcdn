@@ -19,7 +19,10 @@ class xrowCDNFilter
 	} 
     static function filter( $output )
     {
-    	
+    	if ( eZSys::isSSLNow() )
+    	{
+    		return $output;
+    	}
         eZDebug::createAccumulatorGroup( 'outputfilter_total', 'Outputfilter Total' );
         
         $ini          = eZINI::instance( 'xrowcdn.ini' );
