@@ -243,7 +243,7 @@ class xrowCDN
         $cli = eZCLI::instance();
         $ini = eZINI::instance( 'xrowcdn.ini' );
         $cli->output( 'Running updateDatabaseFiles...' );
-        $bucket = $ini->variable( "Rule-images", "Bucket" );
+        $bucket = $ini->variable( "Rule-database", "Bucket" );
         $countfiles = 0;
         $countfiles_up = 0;
         $files = array();
@@ -301,7 +301,7 @@ class xrowCDN
                     }
                 }
                 $countfiles += count( $allfiles );
-                foreach ( $allfiles["files"] as $uploadfile )
+                foreach ( $allfiles as $uploadfile )
                 {
                     $file = eZClusterFileHandler::instance( str_replace( "\\", "/", $uploadfile["file"] ) );
                     $file->fetch( true );

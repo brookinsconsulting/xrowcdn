@@ -34,7 +34,7 @@ Suffixes[]=jpeg
 Suffixes[]=png
 Suffixes[]=ico
 Suffixes[]=css
-Bucket=MyBucket
+Bucket=mybucket
 Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
 [Rule-database]
@@ -46,7 +46,7 @@ Suffixes[]=gif
 Suffixes[]=jpg
 Suffixes[]=jpeg
 Suffixes[]=png
-Bucket=MyBucket
+Bucket=mybucket
 Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
 [Rule-js]
@@ -59,7 +59,7 @@ Dirs[]=\/var\/[a-z0-9_-]+\/cache\/public
 Dirs[]=\/var\/storage\/packages
 Suffixes[]
 Suffixes[]=js
-Bucket=MyBucket
+Bucket=mybucket
 Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
 */ ?>
