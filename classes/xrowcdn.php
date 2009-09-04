@@ -272,6 +272,7 @@ class xrowCDN
             
             foreach ( $result as $object_item )
             {
+            	$allfiles = array();
                 $obj = eZContentObject::fetch( $object_item["co_id"] );
                 $obj_dm = $obj->dataMap();
                 foreach ( $obj_dm as $obj_att )
@@ -315,7 +316,6 @@ class xrowCDN
                         $cli->output( "[FAILED] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) );
                     }
                 }
-                $allfiles = array();
                 self::setLatestDatabaseUpdate( new DateTime( "@" . (string)$obj->attribute( 'modified' ) ) );
                 eZContentObject::clearCache();
             }
