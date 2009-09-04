@@ -381,7 +381,7 @@ class xrowCDN
                                 $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
                                 $dirs = '(' . implode( '|', $dirs ) . ')';
                                 $suffixes = '(' . implode( '|', $suffixes ) . ')';
-                                $rule = "/(" . $dirs . xrowCDNfilter::PATH_EXP . '\/' . xrowCDNfilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
+                                $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
                                 foreach ( $files as $fileName )
                                 {
                                     if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
