@@ -195,7 +195,7 @@ class xrowCDN
             {
                 #$info = $this->s3->getInfo( $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"]) );
                 $filetime = filemtime( $uploadfile["file"] );
-                $filetime = new DateTime( "@{$filetime}" );
+                $filetime = new DateTime( "@" . (string)$filetime );
                 if ( $filetime > $since )
                 {
                     $countfiles_out ++;
@@ -316,7 +316,7 @@ class xrowCDN
                     }
                 }
                 $allfiles = array();
-                self::setLatestDistributionUpdate( new DateTime( "@{" . $obj->attribute( 'modified' ) . "}" ) );
+                self::setLatestDatabaseUpdate( new DateTime( "@" . (string)$obj->attribute( 'modified' ) ) );
                 eZContentObject::clearCache();
             }
         }
