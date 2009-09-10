@@ -24,9 +24,16 @@ class xrowCDNFilter
     		return $output;
     	}
         eZDebug::createAccumulatorGroup( 'outputfilter_total', 'Outputfilter Total' );
+        $ini          = eZINI::instance( 'xrowcdn.ini' );
         // Check if we can gzip content
         $canGzip = ( substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') > 0 );
-        $ini          = eZINI::instance( 'xrowcdn.ini' );
+        $useGZIP = false;
+        $gzipSuffixes = array();
+        if( $ini->hasVariable( 'Settings', 'UseGZIP' ) AND trim( $ini->variable( 'Settings', 'UseGZIP' )  ) == "enabled")
+        {
+        	$useGZIP = true;
+        	$gzipSuffixes = $ini->variable( 'Settings', 'GZIPSuffixes' );
+        }
         $patterns     = array();
         $replacements = array();
         // Send extra Header information for Varnish if GZIP encoding is enabled
@@ -47,14 +54,27 @@ class xrowCDNFilter
         			{
         				$dirs           = $ini->variable( 'Rule-' . $rule, 'Dirs' );
         				$suffix         = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
-        				$patterns[]     = self::buildRegExp( $dirs, $suffix);
-        				if( $canGzip AND $ini->hasVariable( 'Rule-' . $rule, 'UseGZIPHeader' ) AND trim( $ini->variable( 'Rule-' . $rule, 'UseGZIPHeader' ) ) == "enabled" )
+        				if( $useGZIP )
         				{
-        					 $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6.gz';
+        					$suffixesnogzip = array_diff( $suffix, $gzipSuffixes );
+        					$suffixesgzip = array_diff( $suffix, $suffixesnogzip );
+                            
+                            if( count( $suffixesnogzip ) > 0 )
+                            {
+	        					$patterns[]     = self::buildRegExp( $dirs, $suffixesnogzip);
+	        					$replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+                            }
+                            
+        				    if( count( $suffixesgzip ) > 0 )
+                            {
+                                $patterns[]     = self::buildRegExp( $dirs, $suffixesgzip);
+                                $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6.gz';
+                            }
         				}
         				else
         				{
-        					$replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+        					$patterns[]     = self::buildRegExp( $dirs, $suffix);
+                            $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
         				}
         			}
         		}

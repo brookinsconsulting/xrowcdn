@@ -270,7 +270,7 @@ class xrowCDN
         $cli = eZCLI::instance();
         $ini = eZINI::instance( 'xrowcdn.ini' );
         $cli->output( 'Running updateDatabaseFiles...' );
-        $ruleForDatabase = $ini->variable( "Settings", "Rule-For-Database" );
+        $ruleForDatabase = $ini->variable( "Settings", "RuleForDatabase" );
         $bucket = $ini->variable( $ruleForDatabase, "Bucket" );
         $countfiles = 0;
         $countfiles_up = 0;
@@ -364,6 +364,15 @@ class xrowCDN
         $cli = eZCLI::instance();
         $ini = eZINI::instance( 'xrowcdn.ini' );
         $directories = $ini->variable( 'Settings', 'Directories' );
+        
+        $useGZIP = false;
+        $gzipSuffixes = array();
+        if( $ini->hasVariable( 'Settings', 'UseGZIP' ) AND trim( $ini->variable( 'Settings', 'UseGZIP' )  ) == "enabled")
+        {
+            $useGZIP = true;
+            $gzipSuffixes = $ini->variable( 'Settings', 'GZIPSuffixes' );
+        }
+        
         $currrentDate = time();
         $countfiles = 0;
         $files = array();
@@ -409,30 +418,89 @@ class xrowCDN
                                 $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
                                 $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
                                 $dirs = '(' . implode( '|', $dirs ) . ')';
+                                
+                                /*
+                                 * 
+                                 * 
+		                            $suffixesnogzip = array_diff( $suffix, $gzipSuffixes );
+		                            $suffixesgzip = array_diff( $suffix, $suffixesnogzip );
+                                 * 
+                                 */
                                 $canGzip = false;
-                                if( $ini->hasVariable( 'Rule-' . $rule, 'UseGZIPHeader' ) AND trim( $ini->variable( 'Rule-' . $rule, 'UseGZIPHeader' ) ) == "enabled" )
+                                if( $useGZIP )
                                 {
-                                	$canGzip = true;
-                                }
-                                $suffixes = '(' . implode( '|', $suffixes ) . ')';
-                                $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
-                                foreach ( $files as $fileName )
-                                {
-                                    if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+                                	$suffixesnogzip = array_diff( $suffix, $gzipSuffixes );
+                                    $suffixesgzip = array_diff( $suffix, $suffixesnogzip );
+                                    if( count( $suffixesnogzip ) > 0 )
                                     {
-                                    	if( !in_array( $fileName, $filenames ) )
-                                    	{
-                                    		$filenames[] = $fileName;
-                                    		$filestoupload[] = array( 
-                                            "bucket" => $bucket , 
-                                            "file" => $fileName,
-                                            "canGzip" => $canGzip
-	                                        );
-	                                        $countfiles ++;
-                                    	}
+		                                $suffixes = '(' . implode( '|', $suffixesnogzip ) . ')';
+		                                
+		                                $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
+		                                foreach ( $files as $fileName )
+		                                {
+		                                    if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+		                                    {
+		                                        if( !in_array( $fileName, $filenames ) )
+		                                        {
+		                                            $filenames[] = $fileName;
+		                                            $filestoupload[] = array( 
+		                                            "bucket" => $bucket , 
+		                                            "file" => $fileName,
+		                                            "canGzip" => false
+		                                            );
+		                                            $countfiles ++;
+		                                        }
+		                                        
+		                                    }
+		                                }
+                                    }
+                                    if( count( $suffixesgzip ) > 0 )
+                                    {
+                                        $suffixes = '(' . implode( '|', $suffixesgzip ) . ')';
                                         
+                                        $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
+                                        foreach ( $files as $fileName )
+                                        {
+                                            if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+                                            {
+                                                if( !in_array( $fileName, $filenames ) )
+                                                {
+                                                    $filenames[] = $fileName;
+                                                    $filestoupload[] = array( 
+                                                    "bucket" => $bucket , 
+                                                    "file" => $fileName,
+                                                    "canGzip" => true
+                                                    );
+                                                    $countfiles ++;
+                                                }
+                                                
+                                            }
+                                        }
                                     }
                                 }
+                                else 
+                                {
+	                                $suffixes = '(' . implode( '|', $suffixes ) . ')';
+	                                $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
+	                                foreach ( $files as $fileName )
+	                                {
+	                                    if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
+	                                    {
+	                                        if( !in_array( $fileName, $filenames ) )
+	                                        {
+	                                            $filenames[] = $fileName;
+	                                            $filestoupload[] = array( 
+	                                            "bucket" => $bucket , 
+	                                            "file" => $fileName,
+	                                            "canGzip" => $canGzip
+	                                            );
+	                                            $countfiles ++;
+	                                        }
+	                                        
+	                                    }
+	                                }
+                                }
+                                
                             }
                         }
                     }

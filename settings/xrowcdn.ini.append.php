@@ -7,7 +7,12 @@ ImplementationAlias[]
 ImplementationAlias[xrowCloundFront]=xrowCloundFront
 
 ### For now we only can have one rule for DatabaseFiles
-Rule-For-Database=Rule-database
+RuleForDatabase=Rule-database
+
+UseGZIP=enabled
+GZIPSuffixes[]
+GZIPSuffixes[]=css
+GZIPSuffixes[]=js
 
 Directories[]
 Directories[]=var
@@ -23,7 +28,6 @@ List[]=js
 
 [Rule-distribution]
 Distribution=true
-UseGZIPHeader=disabled
 Dirs[]
 #Dirs[]=\/(extension|design|var)(\/[a-z0-9_-]+)*\/(images|public|packages)
 Dirs[]=\/extension\/[a-z0-9_-]+\/design\/[a-z0-9_-]+\/(images|stylesheets)
@@ -42,7 +46,6 @@ Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
 [Rule-database]
 Distribution=false
-UseGZIPHeader=disabled
 Dirs[]
 Dirs[]=\/var\/[a-z0-9_-]+\/storage\/images
 Suffixes[]
@@ -55,7 +58,6 @@ Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
 [Rule-js]
 Distribution=true
-UseGZIPHeader=enabled
 Dirs[]
 #Dirs[]=\/(extension|design|var)(\/[a-z0-9_-]+)*\/(javascript|public|packages)
 Dirs[]=\/extension\/[a-z0-9_-]+\/design\/[a-z0-9_-]+\/javascript
