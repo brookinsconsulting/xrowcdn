@@ -429,8 +429,10 @@ class xrowCDN
                                 $canGzip = false;
                                 if( $useGZIP )
                                 {
-                                	$suffixesnogzip = array_diff( $suffix, $gzipSuffixes );
-                                    $suffixesgzip = array_diff( $suffix, $suffixesnogzip );
+
+                                	$suffixesnogzip = array_diff( $suffixes, $gzipSuffixes );
+                                    $suffixesgzip = array_diff( $suffixes, $suffixesnogzip );
+                                    
                                     if( count( $suffixesnogzip ) > 0 )
                                     {
 		                                $suffixes = '(' . implode( '|', $suffixesnogzip ) . ')';
