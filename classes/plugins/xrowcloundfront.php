@@ -74,7 +74,7 @@ class xrowCloundFront implements xrowCDNInterface
     	{
     		$this->s3->putFile( $file, $bucket . "/" . $remotepath, array( 
                 Zend_Service_Amazon_S3::S3_ACL_HEADER => Zend_Service_Amazon_S3::S3_ACL_PUBLIC_READ,
-                'Cache-Control' => 'max-age=290304000, public', 'Vary' => 'Accept-Encoding', 'Content-Encoding' => 'gzip'
+                'Cache-Control' => 'max-age=290304000, public', 'Content-Encoding' => 'gzip'
             ) );
     	}
     	else

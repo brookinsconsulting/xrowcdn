@@ -226,12 +226,15 @@ class xrowCDN
                 	// Create gzipFile from source
                 	$data = implode("", file( $uploadfile["file"] ));
 					$gzdata = gzencode($data, 9);
-					$gzipTmpFile = "var/xrowcdn_tmp.gz"; 
+					$extension = "." . substr(strrchr($uploadfile["file"],'.'),1);
+					$gzipFile = "";
+					$gzipFile = str_replace( $extension, ".gz" . $extension, $uploadfile["file"] );
+					$gzipTmpFile = "var/xrowcdn_tmp.gz" . $extension;
 					$fp = fopen($gzipTmpFile, "w");
 					fwrite($fp, $gzdata);
 					fclose($fp);
 					// Upload new generated gZip file
-                	$gzipFile = $uploadfile["file"] . ".gz";
+                	
                 	$cdn->put( $gzipTmpFile, str_replace( "\\", "/", $gzipFile ), $uploadfile["bucket"], true );
                 	$cli->output( "[UPLOAD GZ] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $gzipFile ) );
                 	$countfiles_up ++;

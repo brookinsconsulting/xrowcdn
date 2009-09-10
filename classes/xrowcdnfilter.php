@@ -8,14 +8,14 @@ class xrowCDNFilter
 	const DIR_NAME     = '[a-z0-9_-]+';
 	const PATH_EXP     = '(\/[a-z0-9_-]+)*';
 	const BASENAME_EXP = '[.a-z0-9_-]+';
-	
+	const MIN_BRACKETS = 11;
 	static function buildRegExp( $dirs, $suffixes )
 	{
 
         $dirs     = '(' . implode('|', $dirs ) . ')';
         $suffixes = '(' . implode('|', $suffixes ) . ')';
         // [shu][r][cel] improves performance
-        return "/([shu][r][cel])(=['\"]|f=['\"]|(\s)*\((\s)*['\"]?(\s)*)(" . $dirs . self::PATH_EXP . '\/' . self::BASENAME_EXP . '\.'. $suffixes .')/imU';
+        return "/([shu][r][cel])(=['\"]|f=['\"]|(\s)*\((\s)*['\"]?(\s)*)(" . $dirs . self::PATH_EXP . '\/' . self::BASENAME_EXP . ')(\.'. $suffixes .')/imU';
 	} 
     static function filter( $output )
     {
@@ -61,20 +61,33 @@ class xrowCDNFilter
                             
                             if( count( $suffixesnogzip ) > 0 )
                             {
-	        					$patterns[]     = self::buildRegExp( $dirs, $suffixesnogzip);
-	        					$replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+	        					$reg     = self::buildRegExp( $dirs, $suffixesnogzip);
+                                $patterns[] = $reg;
+                                $count = 0;
+                                str_replace( '(', '(' , $reg, $count );
+                                $count -= self::MIN_BRACKETS;
+                                $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . "\\6\\". ( 9 + $count );
                             }
                             
         				    if( count( $suffixesgzip ) > 0 )
                             {
-                                $patterns[]     = self::buildRegExp( $dirs, $suffixesgzip);
-                                $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6.gz';
+                                $reg     = self::buildRegExp( $dirs, $suffixesgzip);
+                                $patterns[] = $reg;
+                                $count = 0;
+                                str_replace( '(', '(' , $reg, $count );
+                                $count -= self::MIN_BRACKETS;
+                                $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . "\\6.gz\\". ( 9 + $count );
+                                
                             }
         				}
         				else
         				{
-        					$patterns[]     = self::buildRegExp( $dirs, $suffix);
-                            $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+        					    $reg     = self::buildRegExp( $dirs, $suffix);
+                                $patterns[] = $reg;
+                                $count = 0;
+                                str_replace( '(', '(' , $reg, $count );
+                                $count -= self::MIN_BRACKETS;
+	                            $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . "\\6\\". ( 9 + $count );
         				}
         			}
         		}
