@@ -68,12 +68,22 @@ class xrowCloundFront implements xrowCDNInterface
      * @param $remotepath Defines the remote location in the bucket / namespace to put the file into (without leading bucket).
      * @throws Exception When an error occured
      */
-    function put( $file, $remotepath, $bucket )
+    function put( $file, $remotepath, $bucket, $isgzip = false )
     {
-        $this->s3->putFile( $file, $bucket . "/" . $remotepath, array( 
-            Zend_Service_Amazon_S3::S3_ACL_HEADER => Zend_Service_Amazon_S3::S3_ACL_PUBLIC_READ,
-            'Cache-Control' => 'max-age=290304000, public'
-        ) );
+    	if( $isgzip )
+    	{
+    		$this->s3->putFile( $file, $bucket . "/" . $remotepath, array( 
+                Zend_Service_Amazon_S3::S3_ACL_HEADER => Zend_Service_Amazon_S3::S3_ACL_PUBLIC_READ,
+                'Cache-Control' => 'max-age=290304000, public', 'Vary' => 'Accept-Encoding', 'Content-Encoding' => 'gzip'
+            ) );
+    	}
+    	else
+    	{
+	        $this->s3->putFile( $file, $bucket . "/" . $remotepath, array( 
+	            Zend_Service_Amazon_S3::S3_ACL_HEADER => Zend_Service_Amazon_S3::S3_ACL_PUBLIC_READ,
+	            'Cache-Control' => 'max-age=290304000, public'
+	        ) );
+    	}
     }
 
 }

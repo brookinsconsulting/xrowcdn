@@ -232,7 +232,7 @@ class xrowCDN
 					fclose($fp);
 					// Upload new generated gZip file
                 	$gzipFile = $uploadfile["file"] . ".gz";
-                	$cdn->put( $gzipTmpFile, str_replace( "\\", "/", $gzipFile ), $uploadfile["bucket"] );
+                	$cdn->put( $gzipTmpFile, str_replace( "\\", "/", $gzipFile ), $uploadfile["bucket"], true );
                 	$cli->output( "[UPLOAD GZ] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $gzipFile ) );
                 	$countfiles_up ++;
                 	// remove file from disk
