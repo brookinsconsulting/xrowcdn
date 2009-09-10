@@ -24,11 +24,16 @@ class xrowCDNFilter
     		return $output;
     	}
         eZDebug::createAccumulatorGroup( 'outputfilter_total', 'Outputfilter Total' );
-        
+        // Check if we can gzip content
+        $canGzip = ( substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') > 0 );
         $ini          = eZINI::instance( 'xrowcdn.ini' );
         $patterns     = array();
         $replacements = array();
-
+        // Send extra Header information for Varnish if GZIP encoding is enabled
+        if ( $canGzip === true )
+        {
+        	header( 'Vary: Accept-Encoding', true );
+        }
         if( $ini->hasVariable( 'Rules', 'List' ) )
         {
         	foreach( $ini->variable( 'Rules', 'List' ) as $rule )
@@ -43,7 +48,14 @@ class xrowCDNFilter
         				$dirs           = $ini->variable( 'Rule-' . $rule, 'Dirs' );
         				$suffix         = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
         				$patterns[]     = self::buildRegExp( $dirs, $suffix);
-        				$replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+        				if( $canGzip AND $ini->hasVariable( 'Rule-' . $rule, 'UseGZIPHeader' ) AND trim( $ini->variable( 'Rule-' . $rule, 'UseGZIPHeader' ) ) == "enabled" )
+        				{
+        					 $replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6.gz';
+        				}
+        				else
+        				{
+        					$replacements[] = '\1\2' . $ini->variable( 'Rule-' . $rule, 'Replacement' ) . '\6';
+        				}
         			}
         		}
         	} // FOREACH

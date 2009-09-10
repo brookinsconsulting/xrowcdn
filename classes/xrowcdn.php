@@ -178,7 +178,6 @@ class xrowCDN
         
         $allfiles = xrowCDN::getDistributionFiles();
         $countfiles = $allfiles["count"];
-        
         // We can get all files from the bucket here and check if the files to upload exists on the remote location or not.
         // $ignoreExistance can manage that
         
@@ -209,9 +208,37 @@ class xrowCDN
             
             try
             {
-                $cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
+            	$canGzip = false;
+                if( array_key_exists( "canGzip", $uploadfile ) AND $uploadfile["canGzip"] )
+                {
+                	$canGzip = true;
+                }
+            	$cdn->put( $uploadfile["file"], str_replace( "\\", "/", $uploadfile["file"] ), $uploadfile["bucket"] );
                 $cli->output( "[UPLOAD] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $uploadfile["file"] ) . ' / ' . $filetime->format( DateTime::ISO8601 ) );
                 $countfiles_up ++;
+                $isGZ = false;
+                if( substr( $uploadfile["file"] , -3) == ".gz" )
+                {
+                	$isGZ = true;
+                }
+                if( $canGzip AND !$isGZ )
+                {
+                	// Create gzipFile from source
+                	$data = implode("", file( $uploadfile["file"] ));
+					$gzdata = gzencode($data, 9);
+					$gzipTmpFile = "var/xrowcdn_tmp.gz"; 
+					$fp = fopen($gzipTmpFile, "w");
+					fwrite($fp, $gzdata);
+					fclose($fp);
+					// Upload new generated gZip file
+                	$gzipFile = $uploadfile["file"] . ".gz";
+                	$cdn->put( $gzipTmpFile, str_replace( "\\", "/", $gzipFile ), $uploadfile["bucket"] );
+                	$cli->output( "[UPLOAD GZ] " . $uploadfile["bucket"] . "/" . str_replace( "\\", "/", $gzipFile ) );
+                	$countfiles_up ++;
+                	// remove file from disk
+                	unlink( $gzipTmpFile );
+                }
+                
             }
             catch ( Exception $e )
             {
@@ -243,7 +270,8 @@ class xrowCDN
         $cli = eZCLI::instance();
         $ini = eZINI::instance( 'xrowcdn.ini' );
         $cli->output( 'Running updateDatabaseFiles...' );
-        $bucket = $ini->variable( "Rule-database", "Bucket" );
+        $ruleForDatabase = $ini->variable( "Settings", "Rule-For-Database" );
+        $bucket = $ini->variable( $ruleForDatabase, "Bucket" );
         $countfiles = 0;
         $countfiles_up = 0;
         $files = array();
@@ -339,6 +367,7 @@ class xrowCDN
         $currrentDate = time();
         $countfiles = 0;
         $files = array();
+        $filenames = array();
         $filestoupload = array();
         $bucketlist = array();
         
@@ -360,7 +389,7 @@ class xrowCDN
             {
                 printf( "Directory [%s] contained a directory we can not recurse into", $directory );
             }
-            
+
             if ( $ini->hasVariable( 'Rules', 'List' ) )
             {
                 foreach ( $ini->variable( 'Rules', 'List' ) as $rule )
@@ -380,17 +409,28 @@ class xrowCDN
                                 $dirs = $ini->variable( 'Rule-' . $rule, 'Dirs' );
                                 $suffixes = $ini->variable( 'Rule-' . $rule, 'Suffixes' );
                                 $dirs = '(' . implode( '|', $dirs ) . ')';
+                                $canGzip = false;
+                                if( $ini->hasVariable( 'Rule-' . $rule, 'UseGZIPHeader' ) AND trim( $ini->variable( 'Rule-' . $rule, 'UseGZIPHeader' ) ) == "enabled" )
+                                {
+                                	$canGzip = true;
+                                }
                                 $suffixes = '(' . implode( '|', $suffixes ) . ')';
                                 $rule = "/(" . $dirs . xrowCDNFilter::PATH_EXP . '\/' . xrowCDNFilter::BASENAME_EXP . '\.' . $suffixes . ')/imU';
                                 foreach ( $files as $fileName )
                                 {
                                     if ( preg_match( $rule, "/" . str_replace( '\\', '/', $fileName ) ) )
                                     {
-                                        $filestoupload[] = array( 
+                                    	if( !in_array( $fileName, $filenames ) )
+                                    	{
+                                    		$filenames[] = $fileName;
+                                    		$filestoupload[] = array( 
                                             "bucket" => $bucket , 
-                                            "file" => $fileName 
-                                        );
-                                        $countfiles ++;
+                                            "file" => $fileName,
+                                            "canGzip" => $canGzip
+	                                        );
+	                                        $countfiles ++;
+                                    	}
+                                        
                                     }
                                 }
                             }
