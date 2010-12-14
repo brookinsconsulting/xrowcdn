@@ -60,7 +60,7 @@ Replacement=http://<uniquecloudfrontname>.cloudfront.net
 Distribution=true
 Dirs[]
 #Dirs[]=\/(extension|design|var)(\/[a-z0-9_-]+)*\/(javascript|public|packages)
-Dirs[]=\/extension\/[a-z0-9_-]+\/design\/[a-z0-9_-]+\/javascript
+Dirs[]=\/extension\/[a-z0-9_-]+\/design\/[a-z0-9_-]+\/(javascript|lib)
 Dirs[]=\/design\/[a-z0-9_-]+\/javascript
 Dirs[]=\/var\/[a-z0-9_-]+\/cache\/public
 Dirs[]=\/var\/storage\/packages

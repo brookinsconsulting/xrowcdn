@@ -5,8 +5,8 @@
  */
 class xrowCDNFilter
 {
-	const DIR_NAME     = '[a-z0-9_-]+';
-	const PATH_EXP     = '(\/[a-z0-9_-]+)*';
+	const DIR_NAME     = '[.a-z0-9_-]+';
+	const PATH_EXP     = '(\/[.a-z0-9_-]+)*';
 	const BASENAME_EXP = '[.a-z0-9_-]+';
 	const MIN_BRACKETS = 11;
 	static function buildRegExp( $dirs, $suffixes )
