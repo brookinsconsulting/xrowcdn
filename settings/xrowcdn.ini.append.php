@@ -9,7 +9,7 @@ ImplementationAlias[xrowCloundFront]=xrowCloundFront
 ### For now we only can have one rule for DatabaseFiles
 RuleForDatabase=Rule-database
 
-UseGZIP=enabled
+UseGZIP=disabled
 GZIPSuffixes[]
 GZIPSuffixes[]=css
 GZIPSuffixes[]=js
