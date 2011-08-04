@@ -34,6 +34,7 @@ Dirs[]=\/extension\/[a-z0-9_-]+\/design\/[a-z0-9_-]+\/(images|stylesheets)
 Dirs[]=\/design\/[a-z0-9_-]+\/(images|stylesheets)
 Dirs[]=\/var\/storage\/packages
 Dirs[]=\/var\/[a-z0-9_-]+\/cache\/public
+Dirs[]=\/var\/[a-z0-9_-]+\/storage\/(images|images-versioned)
 Suffixes[]
 Suffixes[]=gif
 Suffixes[]=jpg
@@ -41,18 +42,6 @@ Suffixes[]=jpeg
 Suffixes[]=png
 Suffixes[]=ico
 Suffixes[]=css
-Bucket=mybucket
-Replacement=http://<uniquecloudfrontname>.cloudfront.net
-
-[Rule-database]
-Distribution=false
-Dirs[]
-Dirs[]=\/var\/[a-z0-9_-]+\/storage\/images
-Suffixes[]
-Suffixes[]=gif
-Suffixes[]=jpg
-Suffixes[]=jpeg
-Suffixes[]=png
 Bucket=mybucket
 Replacement=http://<uniquecloudfrontname>.cloudfront.net
 
